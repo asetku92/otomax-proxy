@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "routes": [
+    {
+      "src": "/InsertInbox",
+      "methods": ["GET", "POST", "OPTIONS"],
+      "dest": "/api/InsertInbox.js"
+    }
+  ]
+}
