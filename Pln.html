@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cek Tagihan PLN</title>
+    <style>
+        /* CSS tetap sama seperti sebelumnya */
+        :root {
+            --primary: #0055ff;
+            --secondary: #00aaff;
+            --accent: #ff5500;
+            --light: #ffffff;
+            --dark: #212121;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --text-color: #ffffff;
+            --bg-gradient: linear-gradient(135deg, #0055ff, #00aaff);
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            margin: 0;
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-attachment: fixed;
+            background-size: cover;
+            position: relative;
+            transition: background 0.5s ease;
+        }
+        
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        header {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--primary);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        header button {
+            background: none;
+            border: none;
+            color: var(--light);
+            font-size: 20px;
+            cursor: pointer;
+            margin-right: 12px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        header button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+        
+        header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+            flex: 1;
+            text-align: center;
+            padding-right: 36px;
+        }
+        
+        .container {
+            padding: 15px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: var(--card-shadow);
+            color: var(--dark);
+            text-align: left;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .input-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 85, 255, 0.1);
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .result-container {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .result-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed #eee;
+        }
+        
+        .result-label {
+            font-weight: 600;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            color: var(--danger);
+            text-align: center;
+            padding: 15px;
+            display: none;
+        }
+        
+        .success-message {
+            color: var(--success);
+            text-align: center;
+            padding: 15px;
+            display: none;
+        }
+        
+        .monitor-status {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        /* Responsive */
+        @media (max-width: 480px) {
+            header {
+                padding: 12px;
+            }
+            
+            header h1 {
+                font-size: 16px;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <button onclick="goBack()">←</button>
+    <h1 id="menuTitle">Cek Tagihan Listrik</h1>
+</header>
+
+<div class="container">
+    <div class="card">
+        <div class="input-group">
+            <label for="nomorMeter">Nomor Meter / ID Pelanggan</label>
+            <input type="text" id="nomorMeter" placeholder="Contoh: 32129283837" inputmode="numeric">
+        </div>
+        
+        <button id="btnCek" class="btn">Cek Tagihan</button>
+        
+        <div id="monitorStatus" class="monitor-status" style="display: none;">
+            Memantau respons dari server...
+        </div>
+    </div>
+    
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <div>Memeriksa tagihan, harap tunggu...</div>
+    </div>
+    
+    <div id="errorMessage" class="error-message"></div>
+    <div id="successMessage" class="success-message"></div>
+    
+    <div id="resultContainer" class="card result-container">
+        <div class="result-title">Informasi Tagihan</div>
+        
+        <div class="result-item">
+            <span class="result-label">Nama Pelanggan:</span>
+            <span id="resultNama">-</span>
+        </div>
+        
+        <div class="result-item">
+            <span class="result-label">Periode:</span>
+            <span id="resultPeriode">-</span>
+        </div>
+        
+        <div class="result-item">
+            <span class="result-label">Jumlah Bulan:</span>
+            <span id="resultJmlBulan">-</span>
+        </div>
+        
+        <div class="result-item">
+            <span class="result-label">Tarif/Daya:</span>
+            <span id="resultTarif">-</span>
+        </div>
+        
+        <div class="result-item">
+            <span class="result-label">Tagihan:</span>
+            <span id="resultTagihan">-</span>
+        </div>
+        
+        <div class="result-item">
+            <span class="result-label">Admin:</span>
+            <span id="resultAdmin">-</span>
+        </div>
+        
+        <div class="result-item">
+            <span class="result-label">Total Tagihan:</span>
+            <span id="resultTotal" style="font-weight: bold;">-</span>
+        </div>
+        
+        <button id="btnBayar" class="btn" style="margin-top: 20px;">Bayar Sekarang</button>
+    </div>
+</div>
+
+<script>
+// Cek login - sama seperti di menu.html
+const kodeReseller = localStorage.getItem("kodereseller") || "";
+const nomorHP = localStorage.getItem("nomorhp") || "";
+if (!kodeReseller || !nomorHP) {
+    // Jika di dalam App Inventor, kirim perintah untuk kembali ke login
+    if (window.AppInventor && window.AppInventor.setWebViewString) {
+        window.AppInventor.setWebViewString(JSON.stringify({
+            action: "back_to_login"
+        }));
+    } else {
+        // Jika di browser biasa, redirect ke login.html
+        window.location.href = "login.html";
+    }
+}
+
+(function setThemeFromLocalStorage() {
+    try {
+        // Ambil data dari localStorage key "AllData"
+        const allData = JSON.parse(localStorage.getItem("AllData") || "{}");
+        const colorScheme = allData.Color?.ColorScheme || {};
+        const bgGradient = allData.Color?.BackgroundGradient || [];
+        
+        // Apply gradient background to body
+        if (bgGradient.length >= 2) {
+            const gradientColors = bgGradient.filter(c => c).join(', ');
+            const gradient = `linear-gradient(135deg, ${gradientColors})`;
+            document.body.style.background = gradient;
+            document.documentElement.style.setProperty('--bg-gradient', gradient);
+        }
+        
+        // Update CSS variables
+        if (colorScheme.primaryColor) {
+            document.documentElement.style.setProperty('--primary', colorScheme.primaryColor);
+        }
+        if (colorScheme.textColor) {
+            document.documentElement.style.setProperty('--text-color', colorScheme.textColor);
+        }
+        
+        // Apply primary color to header
+        if (colorScheme.primaryColor) {
+            document.querySelector('header').style.backgroundColor = colorScheme.primaryColor;
+        }
+        
+        // Apply text color to header
+        if (colorScheme.textColor) {
+            document.querySelector('header').style.color = colorScheme.textColor;
+            
+            // Apply text color to buttons in header
+            const headerButtons = document.querySelectorAll('header button');
+            headerButtons.forEach(button => {
+                button.style.color = colorScheme.textColor;
+            });
+        }
+    } catch (e) {
+        console.warn("Gagal set tema dari localStorage:", e);
+    }
+})();
+
+// Data dari halaman sebelumnya
+const selectedProduct = JSON.parse(localStorage.getItem("selectedProduct") || "{}");
+const kodereseller = localStorage.getItem("kodereseller") || localStorage.getItem("kode_reseller") || "";
+const nomorhp = localStorage.getItem("nomorhp") || "";
+const memberData = JSON.parse(localStorage.getItem("memberData") || "{}");
+const memberID = memberData.memberId || "OWNER"; // Default value jika tidak ada
+
+// Kata kunci default (fallback jika Firebase tidak dapat diakses)
+const defaultKeywords = {
+  "Dibatalkan": "dibatalkan",
+  "Gagal_umum": "GAGAL",
+  "Gangguan": "Produk sedang gangguan",
+  "Pin_salah": "PIN yang Anda masukkan salah",
+  "Produk_salah": "salah kode atau nominal",
+  "Saldo_tidak_cukup": "Saldo tidak cukup",
+  "Stok_kosong": "Stok sedang kosong",
+  "Timout": "karena timout",
+  "TransaksiAkanDiproses": "akan diproses",
+  "TransaksiMasihDiproses": "masih dalam proses",
+  "Transaksi_Sukses": "SUKSES",
+  "Tujuan_diluar_wilayah": "Nomor tujuan diluar wilayah",
+  "Tujuan_salah": "Nomor tujuan salah"
+};
+
+// Variabel untuk menyimpan kata kunci
+let transactionKeywords = { ...defaultKeywords };
+
+// Fungsi untuk mengambil kata kunci dari Firebase
+async function fetchTransactionKeywords() {
+    try {
+        const url = 'https://steady-fin-368617-default-rtdb.firebaseio.com/AsiaPayment/RegexExtractor/FormatKunciTransaksi.json';
+        const res = await fetch(url, { cache: 'no-store' });
+        
+        if (!res.ok) throw new Error('Gagal ambil kata kunci: ' + res.status);
+        
+        const data = await res.json();
+        
+        // Gabungkan dengan default keywords (prioritaskan yang dari Firebase)
+        transactionKeywords = { ...defaultKeywords, ...data };
+        
+        console.log("Kata kunci transaksi berhasil diambil:", transactionKeywords);
+        return transactionKeywords;
+    } catch (error) {
+        console.warn("Gagal mengambil kata kunci dari Firebase, menggunakan default:", error);
+        return defaultKeywords;
+    }
+}
+
+// Element references
+const nomorMeterInput = document.getElementById("nomorMeter");
+const btnCek = document.getElementById("btnCek");
+const btnBayar = document.getElementById("btnBayar");
+const loading = document.getElementById("loading");
+const errorMessage = document.getElementById("errorMessage");
+const successMessage = document.getElementById("successMessage");
+const resultContainer = document.getElementById("resultContainer");
+const monitorStatus = document.getElementById("monitorStatus");
+
+// Tombol kembali
+function goBack() {
+    if (window.AppInventor && window.AppInventor.setWebViewString) {
+        window.AppInventor.setWebViewString(JSON.stringify({ action: "back" }));
+    } else {
+        history.back();
+    }
+}
+
+// Fungsi untuk generate reference ID
+function generateRefId() {
+    const t = Date.now().toString();
+    const rnd = Math.floor(Math.random() * 900 + 100);
+    return (t.slice(-9) + rnd);
+}
+
+// Fungsi untuk mengambil format key pascabayar dari Firebase
+async function fetchPascabayarFormatKey() {
+    try {
+        const url = 'https://steady-fin-368617-default-rtdb.firebaseio.com/AsiaPayment/FormatTrx/Key_Transaksi_PascaBayar.json';
+        const res = await fetch(url, { cache: 'no-store' });
+        
+        if (!res.ok) throw new Error('Gagal ambil format key pascabayar: ' + res.status);
+        
+        const data = await res.json();
+        return data || "CEKPLN"; // Default value jika tidak ada
+    } catch (error) {
+        console.error("Error fetching pascabayar format key:", error);
+        return "CEKPLN"; // Default value jika gagal
+    }
+}
+
+// Fungsi untuk mengambil format transaksi dari API
+async function fetchTransaksiFormat(key) {
+    try {
+        const res = await fetch('http://91.99.163.28:8080/api/GetFormatRequest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nama: key })
+        });
+        
+        if (!res.ok) throw new Error('Gagal ambil format transaksi: ' + res.status);
+        
+        const data = await res.json();
+        
+        if (data.ok && data.result && data.result.length > 0) {
+            // Hilangkan parameter [counter] dan [pin] dari format
+            let format = data.result[0].format;
+            format = format.replace(/\[counter\]/gi, '').replace(/\[pin\]/gi, '');
+            
+            // Bersihkan format dari karakter berlebih
+            format = format.replace(/\s+/g, ' ').trim();
+            format = format.replace(/\s+\./g, '.').replace(/\.\s+/g, '.');
+            format = format.replace(/\s+R#/g, ' R#');
+            
+            return format || "[kodeproduk].[tujuan] R#[refid]";
+        } else {
+            throw new Error('Format transaksi tidak ditemukan');
+        }
+    } catch (error) {
+        console.error("Error fetching transaction format:", error);
+        return "[kodeproduk].[tujuan] R#[refid]"; // Format default jika gagal
+    }
+}
+
+// Fungsi untuk mengirim pesan cek tagihan
+async function kirimPesanCek(pesan) {
+    const payload = {
+        pesan,
+        kode_reseller: String(kodereseller || ""),
+        pengirim: String(nomorhp || ""),
+        tipe_pengirim: 'W'
+    };
+
+    try {
+        const res = await fetch('http://91.99.163.28:8080/api/InsertInbox', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        
+        let data;
+        try {
+            data = await res.json();
+        } catch {
+            data = await res.text();
+        }
+        
+        // Kembalikan data dan status untuk pengecekan respons langsung
+        return {
+            data: data,
+            status: res.status,
+            isJson: typeof data === 'object'
+        };
+    } catch (error) {
+        console.error("Error sending check message:", error);
+        throw error;
+    }
+}
+
+// Modifikasi fungsi isCekPlnSuccess dan isCekPlnFailed untuk menggunakan kata kunci dinamis
+function isCekPlnSuccess(pesan) {
+    // Pattern untuk mendeteksi sukses
+    const successPatterns = [
+        new RegExp(transactionKeywords.Transaksi_Sukses, 'i'),
+        /Saldo.*\-0=/,
+        /nama.*untuk.*periode.*daya.*Tagihan=.*Admin=.*Total Tagihan=/,
+        /Transaksi lancar$/i
+    ];
+    
+    return successPatterns.some(pattern => pattern.test(pesan));
+}
+
+function isCekPlnFailed(pesan) {
+    // Pattern untuk mendeteksi kegagalan menggunakan kata kunci dinamis
+    const failurePatterns = [
+        new RegExp(transactionKeywords.Gagal_umum, 'i'),
+        new RegExp(transactionKeywords.Dibatalkan, 'i'),
+        new RegExp(transactionKeywords.Gangguan, 'i'),
+        new RegExp(transactionKeywords.Pin_salah, 'i'),
+        new RegExp(transactionKeywords.Produk_salah, 'i'),
+        new RegExp(transactionKeywords.Saldo_tidak_cukup, 'i'),
+        new RegExp(transactionKeywords.Stok_kosong, 'i'),
+        new RegExp(transactionKeywords.Timout, 'i'),
+        new RegExp(transactionKeywords.Tujuan_diluar_wilayah, 'i'),
+        new RegExp(transactionKeywords.Tujuan_salah, 'i')
+    ];
+    
+    return failurePatterns.some(pattern => pattern.test(pesan));
+}
+
+// Fungsi untuk memeriksa apakah respons langsung menunjukkan kegagalan
+function isDirectResponseFailed(directResponse) {
+    if (!directResponse || !directResponse.isJson) return false;
+    
+    const responseData = directResponse.data;
+    
+    // Cek jika respons langsung menunjukkan kegagalan
+    if (responseData.ok === false) return true;
+    
+    if (responseData.result) {
+        const result = responseData.result;
+        // Cek statusDesc atau pesan untuk indikasi kegagalan
+        if (result.statusDesc && 
+            (result.statusDesc.includes("Gagal") || 
+             result.statusDesc.includes("Salah") ||
+             result.statusDesc.includes("Timeout"))) {
+            return true;
+        }
+        
+        if (result.pesan && isCekPlnFailed(result.pesan)) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+// Fungsi untuk memeriksa apakah respons langsung menunjukkan keberhasilan
+function isDirectResponseSuccess(directResponse) {
+    if (!directResponse || !directResponse.isJson) return false;
+    
+    const responseData = directResponse.data;
+    
+    // Cek jika respons langsung menunjukkan keberhasilan
+    if (responseData.ok === true && responseData.result) {
+        const result = responseData.result;
+        
+        // Cek statusDesc atau pesan untuk indikasi keberhasilan
+        if (result.statusDesc && result.statusDesc.includes("Sukses")) {
+            return true;
+        }
+        
+        if (result.pesan && isCekPlnSuccess(result.pesan)) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+// Fungsi untuk memeriksa apakah respons langsung adalah "Sukses Masuk Transaksi"
+function isDirectResponseProcessing(directResponse) {
+    if (!directResponse || !directResponse.isJson) return false;
+    
+    const responseData = directResponse.data;
+    
+    // Cek jika respons langsung menunjukkan transaksi sedang diproses
+    if (responseData.ok === true && responseData.result) {
+        const result = responseData.result;
+        
+        // Cek statusDesc untuk "Sukses Masuk Transaksi"
+        if (result.statusDesc && result.statusDesc.includes("Sukses Masuk Transaksi")) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+// Fungsi untuk memantau notifikasi dari Firebase berdasarkan trxid
+async function monitorNotificationByTrxId(trxid) {
+    const maxAttempts = 30; // Maksimal 30x percobaan (90 detik)
+    const delay = 3000; // Delay 3 detik antar percobaan
+    
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        try {
+            updateMonitorStatus(`Memantau respons (${attempt + 1}/${maxAttempts})...`);
+            
+            // PERBAIKAN PATH FIREBASE - menggunakan path yang benar
+            const url = `https://steady-fin-368617-default-rtdb.firebaseio.com/AsiaPayment/Notifikation/${memberID}/${trxid}.json?ts=${Date.now()}`;
+            const res = await fetch(url, { cache: 'no-store' });
+            
+            if (!res.ok) throw new Error('Gagal ambil notifikasi: ' + res.status);
+            
+            const notif = await res.json();
+            
+            // PERBAIKAN: Cek apakah notifikasi ditemukan dan memiliki data
+            if (notif && notif.status_desc) {
+                // PERBAIKAN: Gunakan status_desc sebagai indikator utama
+                if (notif.status_desc === "Sukses") {
+                    // Cek apakah ada pesan untuk parsing data tagihan
+                    if (notif.pesan && notif.pesan.includes("CEKPLN")) {
+                        return { 
+                            status: "success", 
+                            message: notif.pesan,
+                            data: notif
+                        };
+                    } else {
+                        return { 
+                            status: "success", 
+                            message: "Transaksi berhasil",
+                            data: notif
+                        };
+                    }
+                } 
+                // PERBAIKAN: Tangani kasus timeout dengan benar
+                else if (notif.status_desc === "Timeout") {
+                    return { 
+                        status: "error", 
+                            message: notif.pesan || "Timeout",
+                        status_desc: notif.status_desc,
+                        data: notif
+                    };
+                }
+                // Jika status_desc bukan "Sukses", berarti gagal
+                else {
+                    return { 
+                        status: "error", 
+                        message: notif.pesan || "Transaksi gagal",
+                        status_desc: notif.status_desc,
+                        data: notif
+                    };
+                }
+            }
+            
+            // Tunggu sebelum coba lagi
+            await new Promise(resolve => setTimeout(resolve, delay));
+        } catch (error) {
+            console.error("Error monitoring notification:", error);
+            if (attempt === maxAttempts - 1) {
+                // Jika timeout, kirim notifikasi ke Kodular dengan format yang benar
+                if (window.AppInventor && window.AppInventor.setWebViewString) {
+                    window.AppInventor.setWebViewString(JSON.stringify({
+                        action: "cekpln_error",
+                        message: "Timeout",
+                        status_desc: "Timeout"
+                    }));
+                }
+                
+                throw new Error("Timeout: Tidak mendapatkan respons dari server setelah " + maxAttempts + " percobaan");
+            }
+        }
+    }
+    
+    // Jika mencapai sini, berarti timeout
+    if (window.AppInventor && window.AppInventor.setWebViewString) {
+        window.AppInventor.setWebViewString(JSON.stringify({
+            action: "cekpln_error",
+            message: "Timeout",
+            status_desc: "Timeout"
+        }));
+    }
+    
+    throw new Error("Timeout: Tidak mendapatkan respons dari server setelah " + maxAttempts + " percobaan");
+}
+
+// Fungsi untuk parsing respons CEKPLN dengan regex dari Firebase
+function parseCekPlnResponse(pesan) {
+    try {
+        // Ambil regex dari localStorage -> AllData.RegexExtractor.RegexCekPLN
+        const allData = JSON.parse(localStorage.getItem("AllData") || "{}");
+        const regexPatterns = allData.RegexExtractor?.RegexCekPLN || [];
+        
+        // Jika tidak ada regex pattern di Firebase, throw error
+        if (!regexPatterns || regexPatterns.length === 0) {
+            throw new Error("Regex pattern untuk CEKPLN tidak ditemukan di Firebase");
+        }
+        
+        console.log("Regex patterns dari Firebase:", regexPatterns);
+        
+        // Coba setiap pattern regex secara berurutan
+        for (let i = 0; i < regexPatterns.length; i++) {
+            try {
+                const pattern = new RegExp(regexPatterns[i], 'i');
+                const match = pesan.match(pattern);
+                
+                if (match && match.groups) {
+                    console.log("Regex pattern ke-" + (i+1) + " match berhasil:", match.groups);
+                    return match.groups;
+                }
+            } catch (regexError) {
+                console.warn("Regex pattern ke-" + (i+1) + " error:", regexError);
+                // Lanjut ke pattern berikutnya jika ada error dalam regex
+            }
+        }
+        
+        // Jika tidak ada pattern yang match
+        throw new Error("Tidak ada regex pattern yang cocok dengan respons server");
+        
+    } catch (error) {
+        console.error("Error dalam parsing regex:", error);
+        
+        // Kirim error ke Kodular jika di App Inventor
+        if (window.AppInventor && window.AppInventor.setWebViewString) {
+            window.AppInventor.setWebViewString(JSON.stringify({
+                action: "cekpln_regex_error",
+                message: error.message,
+                source: "regex_parsing"
+            }));
+        }
+        
+        throw new Error("Gagal memparsing respons: " + error.message);
+    }
+}
+
+// Update status monitoring
+function updateMonitorStatus(message) {
+    monitorStatus.textContent = message;
+    monitorStatus.style.display = 'block';
+}
+
+// Event handler untuk tombol cek
+btnCek.addEventListener("click", async function() {
+    const nomorMeter = nomorMeterInput.value.trim();
+    
+    if (!nomorMeter) {
+        showError("Harap masukkan nomor meter/listrik");
+        return;
+    }
+    
+    // Validasi nomor meter (minimal 10 digit angka)
+    if (!/^\d{10,}$/.test(nomorMeter)) {
+        showError("Nomor meter tidak valid. Minimal 10 digit angka.");
+        return;
+    }
+    
+    // Tampilkan loading, sembunyikan error jika ada
+    showLoading();
+    hideError();
+    monitorStatus.style.display = 'block';
+    updateMonitorStatus("Mempersiapkan permintaan...");
+    
+    try {
+        // Ambil format key pascabayar dari Firebase
+        updateMonitorStatus("Mengambil format key pascabayar...");
+        const formatKey = await fetchPascabayarFormatKey();
+        
+        // Ambil format transaksi dari API
+        updateMonitorStatus("Mengambil format transaksi...");
+        const formatTransaksi = await fetchTransaksiFormat(formatKey);
+        
+        // Generate reference ID
+        const refid = generateRefId();
+        
+        // Bangun pesan sesuai format transaksi
+        const kodeCek = selectedProduct.kodeCek || "CEKPLN";
+        let pesan = formatTransaksi
+            .replace(/\[kodeproduk\]/gi, kodeCek)
+            .replace(/\[tujuan\]/gi, nomorMeter)
+            .replace(/\[pin\]/gi, "") // PIN dihapus karena tidak diperlukan
+            .replace(/\[refid\]/gi, refid);
+        
+        updateMonitorStatus("Mengirim permintaan cek tagihan...");
+        
+        // Kirim pesan cek dan dapatkan respons langsung
+        const directResponse = await kirimPesanCek(pesan);
+        
+        // Kirim semua respons langsung ke Kodular
+        if (window.AppInventor && window.AppInventor.setWebViewString) {
+            window.AppInventor.setWebViewString(JSON.stringify({
+                action: "cekpln_direct_response",
+                refid: refid,
+                data: directResponse.data,
+                source: "direct"
+            }));
+        }
+        
+        // Periksa apakah ada respons langsung yang menunjukkan hasil
+        if (isDirectResponseProcessing(directResponse)) {
+            // Jika statusDesc adalah "Sukses Masuk Transaksi", ambil kode_transaksi dan pantau Firebase
+            const kodeTransaksi = directResponse.data.result.kode_transaksi;
+            
+            updateMonitorStatus("Transaksi sedang diproses, menunggu hasil...");
+            
+            // Tunggu dan pantau notifikasi berdasarkan trxid
+            const response = await monitorNotificationByTrxId(kodeTransaksi);
+            
+            if (response.status === "success") {
+                updateMonitorStatus("Memproses respons sukses...");
+                
+                // Parse respons jika ada pesan
+                let result = {};
+                if (response.message && response.message.includes("CEKPLN")) {
+                    result = parseCekPlnResponse(response.message);
+                } else if (response.data && response.data.pesan) {
+                    result = parseCekPlnResponse(response.data.pesan);
+                }
+                
+                // Tampilkan hasil
+                showResult(result);
+                updateMonitorStatus("Respons berhasil diterima dan diproses");
+                
+                // Kirim notifikasi sukses ke Kodular
+                if (window.AppInventor && window.AppInventor.setWebViewString) {
+                    window.AppInventor.setWebViewString(JSON.stringify({
+                        action: "cekpln_success",
+                        trxid: kodeTransaksi,
+                        data: result,
+                        source: "firebase"
+                    }));
+                }
+            } else {
+                // Jika gagal, lempar error (tapi jangan tampilkan di UI, hanya kirim ke Kodular)
+                if (window.AppInventor && window.AppInventor.setWebViewString) {
+                    // PERBAIKAN: Kirim pesan error dengan format yang benar
+                    window.AppInventor.setWebViewString(JSON.stringify({
+                        action: "cekpln_error",
+                        message: response.message,
+                        status_desc: response.status_desc,
+                        source: "firebase"
+                    }));
+                }
+                
+                throw new Error(response.message);
+            }
+        } else if (isDirectResponseSuccess(directResponse)) {
+            // Jika respons langsung menunjukkan sukses (bukan "Sukses Masuk Transaksi")
+            updateMonitorStatus("Memproses respons sukses langsung...");
+            
+            // Parse respons langsung
+            const result = parseCekPlnResponse(directResponse.data.result.pesan);
+            
+            if (result) {
+                // Tampilkan hasil
+                showResult(result);
+                updateMonitorStatus("Respons langsung berhasil diterima dan diproses");
+                
+                // Kirim notifikasi sukses ke Kodular
+                if (window.AppInventor && window.AppInventor.setWebViewString) {
+                    window.AppInventor.setWebViewString(JSON.stringify({
+                        action: "cekpln_success",
+                        refid: refid,
+                        data: result,
+                        source: "direct"
+                    }));
+                }
+            } else {
+                throw new Error("Gagal memproses respons langsung");
+            }
+        } else if (isDirectResponseFailed(directResponse)) {
+            // Jika respons langsung menunjukkan kegagalan, kirim ke Kodular
+            updateMonitorStatus("Respons langsung menunjukkan kegagalan, mengirim ke Kodular...");
+            
+            // Jangan tampilkan error di UI, hanya kirim ke Kodular
+            throw new Error("Respons langsung menunjukkan kegagalan: " + 
+                (directResponse.data.result?.statusDesc || directResponse.data.result?.pesan || "Terjadi kesalahan"));
+        } else {
+            // Jika tidak ada respons langsung yang jelas, kirim ke Kodular
+            updateMonitorStatus("Respons tidak dikenali, mengirim ke Kodular...");
+            
+            if (window.AppInventor && window.AppInventor.setWebViewString) {
+                window.AppInventor.setWebViewString(JSON.stringify({
+                    action: "cekpln_unknown_response",
+                    refid: refid,
+                    data: directResponse.data,
+                    source: "direct"
+                }));
+            }
+            
+            throw new Error("Respons tidak dikenali dari server");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        
+        // TAMPILKAN ERROR DI UI JIKA ERROR REGEX
+        if (error.message.includes("regex") || error.message.includes("Regex")) {
+            showError("Error parsing data: " + error.message);
+        }
+        
+        // Kirim error ke Kodular
+        if (window.AppInventor && window.AppInventor.setWebViewString) {
+            window.AppInventor.setWebViewString(JSON.stringify({
+                action: "cekpln_error",
+                message: error.message,
+                status_desc: "Error"
+            }));
+        }
+    } finally {
+        hideLoading();
+    }
+});
+
+// Event handler untuk tombol bayar
+btnBayar.addEventListener("click", function() {
+    // Ambil data dari hasil cek tagihan
+    const nomorMeter = nomorMeterInput.value.trim();
+    const nama = document.getElementById("resultNama").textContent;
+    const periode = document.getElementById("resultPeriode").textContent;
+    const tarif = document.getElementById("resultTarif").textContent;
+    const tagihan = document.getElementById("resultTagihan").textContent;
+    const admin = document.getElementById("resultAdmin").textContent;
+    const total = document.getElementById("resultTotal").textContent;
+    
+    // Simpan data untuk halaman pembayaran
+    const billData = {
+        nomorMeter,
+        nama,
+        periode,
+        tarif,
+        tagihan,
+        admin,
+        total
+    };
+    
+    localStorage.setItem("billData", JSON.stringify(billData));
+    
+    // Kirim perintah ke Kodular untuk membuka halaman pembayaran
+    if (window.AppInventor && window.AppInventor.setWebViewString) {
+        window.AppInventor.setWebViewString(JSON.stringify({
+            action: "open_payment",
+            billData: billData
+        }));
+    } else {
+        // Jika di browser, redirect ke halaman pembayaran
+        window.location.href = "payment.html";
+    }
+});
+
+// Fungsi untuk menampilkan hasil
+function showResult(data) {
+    // Format angka ke format Rupiah
+    function formatRupiah(angka) {
+        if (!angka || isNaN(angka)) return "-";
+        return "Rp " + parseInt(angka).toLocaleString("id-ID");
+    }
+    
+    // Isi data ke UI
+    document.getElementById("resultNama").textContent = data.nama || "-";
+    document.getElementById("resultPeriode").textContent = data.periode || "-";
+    document.getElementById("resultJmlBulan").textContent = data.jml_bulan || "1";
+    document.getElementById("resultTarif").textContent = data.tarif || "-";
+    document.getElementById("resultTagihan").textContent = formatRupiah(data.tagihan);
+    document.getElementById("resultAdmin").textContent = formatRupiah(data.admin);
+    document.getElementById("resultTotal").textContent = formatRupiah(data.ttag);
+    
+    // Tampilkan container hasil
+    resultContainer.style.display = "block";
+    successMessage.style.display = "none";
+}
+
+// Fungsi untuk menampilkan loading
+function showLoading() {
+    loading.style.display = "block";
+    btnCek.disabled = true;
+    resultContainer.style.display = "none";
+}
+
+// Fungsi untuk menyembunyikan loading
+function hideLoading() {
+    loading.style.display = "none";
+    btnCek.disabled = false;
+}
+
+// Fungsi untuk menampilkan error
+function showError(message) {
+    errorMessage.textContent = message;
+    errorMessage.style.display = "block";
+    resultContainer.style.display = "none";
+    successMessage.style.display = "none";
+}
+
+// Fungsi untuk menyembunyikan error
+function hideError() {
+    errorMessage.style.display = "none";
+}
+
+// Inisialisasi saat halaman dimuat
+document.addEventListener("DOMContentLoaded", function() {
+    // Set judul halaman
+    document.getElementById("menuTitle").textContent = selectedProduct.nama || "Cek Tagihan Listrik";
+    
+    // Fokus ke input nomor meter
+    nomorMeterInput.focus();
+    
+    // Ambil kata kunci transaksi dari Firebase
+    fetchTransactionKeywords();
+    
+    // Validasi apakah regex pattern ada di localStorage
+    const allData = JSON.parse(localStorage.getItem("AllData") || "{}");
+    const regexPatterns = allData.RegexExtractor?.RegexCekPLN || [];
+    
+    if (regexPatterns.length === 0) {
+        console.warn("WARNING: Regex pattern untuk CEKPLN tidak ditemukan di localStorage");
+        // Bisa tambahkan notifikasi ke user jika perlu
+    }
+});
+</script>
+</body>
+</html>
