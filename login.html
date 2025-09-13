@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - ASIA PAYMENT</title>
+    <style>
+        :root {
+            --primary: #0055ff;
+            --secondary: #00aaff;
+            --accent: #ff5500;
+            --light: #ffffff;
+            --dark: #212121;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --bg-gradient: linear-gradient(135deg, #0055ff, #00aaff);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            margin: 0;
+            background: var(--bg-gradient);
+            color: var(--dark);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: background 0.5s ease;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: var(--bg-gradient);
+            padding: 20px;
+            text-align: center;
+            color: white;
+        }
+        
+        .header img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 15px;
+            border: 3px solid white;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .form-container {
+            padding: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 85, 255, 0.1);
+        }
+        
+        .form-group input.error {
+            border-color: var(--danger);
+        }
+        
+        .error-text {
+            color: var(--danger);
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        button {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #0044cc;
+        }
+        
+        .switch-form {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        
+        .switch-form a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .switch-form a:hover {
+            text-decoration: underline;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgoChegZIJ3ZMDbPsF24DjVP68tqUjY-kl2-y_TWpfJuJLt1XHPqKEfQI_oL9-cC8iA8GaALbOP7VsgmqDWsPUaTfHSHxp6e_LOGIMy3op4C8m-12nLPXgbYGIxKeKHPb4lnKzztycM5GNBK6QwYvW0omPYX9fduw8c9K6BGj_dAv9-4acxnU1ZF6en4oA/s512/logo_asia_payment.jpg" alt="Logo ASIA PAYMENT">
+            <h1>ASIA PAYMENT</h1>
+            <p>Platform Pembayaran Terlengkap</p>
+        </div>
+        
+        <div class="form-container">
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="kode">Kode Reseller:</label>
+                    <input type="text" id="kode" name="kode" required placeholder="Masukkan kode reseller">
+                </div>
+                
+                <div class="form-group">
+                    <label for="nomorhp">Nomor HP:</label>
+                    <input type="text" id="nomorhp" name="nomorhp" required placeholder="Masukkan nomor HP">
+                    <div class="error-text" id="nomorhpError">Nomor HP hanya boleh berisi angka</div>
+                </div>
+                
+                <button type="submit">Login</button>
+            </form>
+            
+            <div class="switch-form">
+                Belum punya akun? <a href="daftar.html">Daftar di sini</a>
+            </div>
+            
+            <div class="loading" id="loading">
+                Memverifikasi login...
+            </div>
+            
+            <div id="result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        // URL Firebase default
+        const defaultFirebaseUrl = "https://steady-fin-368617-default-rtdb.firebaseio.com/AsiaPayment.json";
+        
+        // Ambil URL Firebase dari localStorage jika ada, jika tidak gunakan default
+        let firebaseUrl = localStorage.getItem("firebaseUrl") || defaultFirebaseUrl;
+        
+        // Fungsi untuk mengambil data dari Firebase dan menyimpannya ke localStorage
+        async function fetchFirebaseData() {
+            try {
+                const response = await fetch(firebaseUrl);
+                const data = await response.json();
+                
+                // Simpan URL Firebase ke localStorage untuk digunakan di halaman lain
+                localStorage.setItem("firebaseUrl", firebaseUrl);
+                
+                // Simpan semua data ke localStorage untuk konsistensi UI
+                localStorage.setItem("AllData", JSON.stringify(data));
+                
+                // Simpan setiap bagian data secara terpisah
+                for (const key in data) {
+                    if (key !== "inviteCodes") {
+                        localStorage.setItem(key, JSON.stringify(data[key]));
+                    }
+                }
+                
+                console.log("Data Firebase berhasil diambil dan disimpan");
+                
+                // Terapkan background gradient dari Firebase
+                applyBackgroundGradient(data);
+            } catch (error) {
+                console.error("Gagal mengambil data dari Firebase:", error);
+            }
+        }
+        
+        // Fungsi untuk menerapkan background gradient dari Firebase
+        function applyBackgroundGradient(data) {
+            if (data.Color && data.Color.BackgroundGradient) {
+                const gradients = data.Color.BackgroundGradient.filter(g => g);
+                if (gradients.length > 0) {
+                    document.body.style.background = `linear-gradient(135deg, ${gradients.join(', ')})`;
+                    document.querySelector('.header').style.background = `linear-gradient(135deg, ${gradients.join(', ')})`;
+                }
+            }
+        }
+        
+        // Fungsi untuk mengekstrak nomor HP dari pesan
+        function extractPhoneNumbers(message) {
+            const phoneRegex = /\b\d{10,15}\b/g;
+            return message.match(phoneRegex) || [];
+        }
+        
+        // Fungsi untuk menormalisasi nomor HP
+        function normalizePhone(phone) {
+            // Hapus semua karakter non-digit
+            let normalized = phone.replace(/\D/g, '');
+            // Hapus awalan 0 atau 62
+            if (normalized.startsWith('0')) {
+                normalized = normalized.substring(1);
+            } else if (normalized.startsWith('62')) {
+                normalized = normalized.substring(2);
+            }
+            return normalized;
+        }
+        
+        // Fungsi untuk memvalidasi input nomor HP
+        function validatePhoneNumber(phone) {
+            // Hanya boleh berisi angka
+            const phoneRegex = /^\d+$/;
+            return phoneRegex.test(phone);
+        }
+        
+        // Event listener untuk input nomor HP
+        document.getElementById('nomorhp').addEventListener('input', function(e) {
+            const input = e.target;
+            const errorElement = document.getElementById('nomorhpError');
+            
+            if (!validatePhoneNumber(input.value)) {
+                input.classList.add('error');
+                errorElement.style.display = 'block';
+            } else {
+                input.classList.remove('error');
+                errorElement.style.display = 'none';
+            }
+        });
+        
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Log info: tombol login diklik
+            console.log("tombol_login_diklik");
+            
+            // Ambil nilai dari form dan terapkan trim()
+            let kode = document.getElementById('kode').value.trim().toUpperCase();
+            let nomorhp = document.getElementById('nomorhp').value.trim();
+            
+            // Validasi nomor HP
+            if (!validatePhoneNumber(nomorhp)) {
+                const resultDiv = document.getElementById('result');
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<strong>Gagal:</strong> Nomor HP hanya boleh berisi angka`;
+                return;
+            }
+            
+            // Normalisasi nomor HP (hapus karakter non-digit)
+            nomorhp = nomorhp.replace(/\D/g, '');
+            
+            // Tampilkan loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+            
+            try {
+                console.log('Mengirim request login dengan:', { 
+                    kode_reseller: kode, 
+                    pengirim: nomorhp, 
+                    tipe_pengirim: "W" 
+                });
+                
+                // Kirim request ke API InsertInbox
+                const response = await fetch('http://91.99.163.28:8080/api/InsertInbox', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        pesan: "LISTNO",
+                        kode_reseller: kode,
+                        pengirim: nomorhp,
+                        tipe_pengirim: "W"
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Sembunyikan loading
+                document.getElementById('loading').style.display = 'none';
+                
+                // Tampilkan hasil
+                const resultDiv = document.getElementById('result');
+                resultDiv.style.display = 'block';
+                
+                // Periksa jika kode reseller tidak valid
+                if (data.result && (data.result.status === 41 || data.result.statusDesc === "Bukan Reseller")) {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `<strong>Gagal:</strong> Data tidak sesuai`;
+                    return;
+                }
+                
+                if (data.ok) {
+                    // Ekstrak nomor HP dari pesan respons
+                    const message = data.result.pesan || "";
+                    const phoneNumbers = extractPhoneNumbers(message);
+                    
+                    const inputNormalized = normalizePhone(nomorhp);
+                    let isValidPhone = false;
+                    
+                    // Bandingkan nomor HP yang dimasukkan dengan yang terdaftar
+                    for (const phone of phoneNumbers) {
+                        if (normalizePhone(phone) === inputNormalized) {
+                            isValidPhone = true;
+                            break;
+                        }
+                    }
+                    
+                    if (isValidPhone) {
+                        // Ambil data dari Firebase sebelum melanjutkan
+                        await fetchFirebaseData();
+                        
+                        // Simpan data ke localStorage (pastikan huruf besar untuk kode reseller)
+                        localStorage.setItem("kodereseller", kode.toUpperCase());
+                        localStorage.setItem("nomorhp", nomorhp);
+                        
+                        // Kirim data ke Kodular jika dalam aplikasi
+                        if (window.AppInventor && window.AppInventor.setWebViewString) {
+                            window.AppInventor.setWebViewString(JSON.stringify({
+                                action: "login_success",
+                                kodereseller: kode.toUpperCase(),
+                                nomorhp: nomorhp
+                            }));
+                        } else {
+                            // Fallback untuk browser biasa (hanya untuk testing)
+                            console.log("Data yang akan dikirim ke Kodular:", {
+                                action: "login_success",
+                                kodereseller: kode.toUpperCase(),
+                                nomorhp: nomorhp
+                            });
+                            
+                            // Redirect langsung tanpa timer
+                            window.location.href = "menu_beranda.html?kodereseller=" + 
+                                                  encodeURIComponent(kode.toUpperCase()) + 
+                                                  "&nomorhp=" + 
+                                                  encodeURIComponent(nomorhp);
+                        }
+                    } else {
+                        resultDiv.className = 'result error';
+                        resultDiv.innerHTML = `<strong>Gagal:</strong> Data tidak sesuai`;
+                    }
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `<strong>Gagal:</strong> Data tidak sesuai`;
+                }
+            } catch (error) {
+                // Sembunyikan loading
+                document.getElementById('loading').style.display = 'none';
+                
+                // Tampilkan error
+                const resultDiv = document.getElementById('result');
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<strong>Error:</strong> Gagal terhubung ke server. Pastikan Anda terhubung ke internet.`;
+                console.error('Error:', error);
+            }
+        });
+        
+        // Ambil data dari Firebase saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchFirebaseData();
+        });
+    </script>
+</body>
+</html>
